@@ -18,7 +18,7 @@ public class DealershipFileManager {
 
             Dealership dealership = new Dealership(name, address, phone);
 
-            // Handle all of the vehicles, lines 2+
+            // Handle all of the vehicles,
             while((input = bufferedReader.readLine()) != null){
                 String[] vehicleDetails = input.split("\\|");
 

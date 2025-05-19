@@ -1,6 +1,7 @@
 package com.ps;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -9,6 +10,7 @@ public class UserInterface {
     private Scanner scanner = new Scanner(System.in);
 
     private void init(){
+
         dealership = DealershipFileManager.getDealership();
     }
 
@@ -28,6 +30,7 @@ public class UserInterface {
         int mainMenuCommand;
 
         do{
+            System.out.println("");
             System.out.println("1. Get by price");
             System.out.println("2. Get by make/model");
             System.out.println("3. Get by year");
@@ -37,6 +40,7 @@ public class UserInterface {
             System.out.println("7. Get all");
             System.out.println("8. Add vehicle");
             System.out.println("9. Remove vehicle");
+            System.out.println("10. Buying or Leaseing a car");
             System.out.println("0. Exit");
 
             System.out.print("Command: ");
@@ -71,6 +75,8 @@ public class UserInterface {
                 case 9:
                     processRemoveVehicleRequest();
                     break;
+                case 10:
+                    selectPurchaseType();
                 case 0:
                     System.out.println("Exiting...");
                     break;
@@ -78,6 +84,78 @@ public class UserInterface {
                     System.out.println("Command not found, try again");
             }
         } while(mainMenuCommand != 0);
+    }
+
+
+    private void selectPurchaseType() {
+        System.out.println("Congrats! You've decided to buy or lease a car.");
+        System.out.println("Enter 1 to BUY a vehicle");
+        System.out.println("Enter 2 to LEASE a vehicle");
+        int input = scanner.nextInt();
+        scanner.nextLine();
+        if (input == 1) {
+            handleSaleContract();
+        } else if (input == 2) {
+            handleLeaseContract();
+        } else {
+            System.out.println("Invalid input.");
+        }
+    }
+
+    private void handleSaleContract() {
+        System.out.print("Enter VIN to sell: ");
+        int vin = Integer.parseInt(scanner.nextLine());
+        Vehicle vehicle = findVehicleByVin(vin);
+        if (vehicle == null) {
+            System.out.println("Vehicle not found.");
+            return;
+        }
+
+        System.out.print("Customer name: ");
+        String name = scanner.nextLine();
+        System.out.print("Customer email: ");
+        String email = scanner.nextLine();
+        System.out.print("Finance? (yes/no): ");
+        String input = scanner.nextLine();
+        boolean finance = input.equalsIgnoreCase("yes");
+
+        String date = LocalDate.now().toString();
+        SalesContract contract = new SalesContract(date, name, email, vehicle, finance);
+        new ContractFileManager().saveContract(contract);
+        dealership.removeVehicle(vin);
+        DealershipFileManager.saveDealership(dealership);
+        System.out.println("Sale completed and contract saved.");
+    }
+
+    private void handleLeaseContract() {
+        System.out.print("Enter VIN to lease: ");
+        int vin = Integer.parseInt(scanner.nextLine());
+        Vehicle vehicle = findVehicleByVin(vin);
+        if (vehicle == null) {
+            System.out.println("Vehicle not found.");
+            return;
+        }
+
+        System.out.print("Customer name: ");
+        String name = scanner.nextLine();
+        System.out.print("Customer email: ");
+        String email = scanner.nextLine();
+
+        String date = LocalDate.now().toString();
+        LeaseContract contract = new LeaseContract(date, name, email, vehicle);
+        new ContractFileManager().saveContract(contract);
+        dealership.removeVehicle(vin);
+        DealershipFileManager.saveDealership(dealership);
+        System.out.println("Lease completed and contract saved.");
+    }
+
+    private Vehicle findVehicleByVin(int vin) {
+        for (Vehicle vehicle : dealership.getAllVehicles()) {
+            if (vehicle.getVin() == vin) {
+                return vehicle;
+            }
+        }
+        return null;
     }
 
 
